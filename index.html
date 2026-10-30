@@ -735,6 +735,7 @@ const demo = {
       { id: 'acu', doctorId: 'tcm', name: 'ฝังเข็ม', detail: 'ใช้เวลาประมาณ 40 นาที', durationMin: 40, phases: [{ min: 40, label: 'ฝังเข็ม', doctor: true }] },
       { id: 'cupping', doctorId: 'tcm', name: 'ครอบแก้ว', detail: 'ใช้เวลาประมาณ 20 นาที', durationMin: 20, phases: [{ min: 20, label: 'ครอบแก้ว', doctor: true }] },
       { id: 'guasha', doctorId: 'tcm', name: 'กัวซาหน้าใส + มาสก์หน้าสมุนไพรจีน', detail: 'ใช้เวลาประมาณ 1 ชั่วโมง', durationMin: 60, phases: [{ min: 60, label: 'กัวซาหน้าใส + มาสก์หน้าสมุนไพรจีน', doctor: true }] },
+      { id: 'tcm_followup', doctorId: 'tcm', name: 'Follow up', detail: 'ใช้เวลาประมาณ 15 นาที', durationMin: 15, slotStepMin: 15, phases: [{ min: 15, label: 'Follow up', doctor: true }] },
     ],
   },
   contacts: [
@@ -753,7 +754,7 @@ function demoWindows(k, doctorId) {
   return p.wd % 2 ? [[600, 780], [1020, 1200]] : [[780, 1200]];
 }
 function demoSlots(svc, k) {
-  const step = svc.doctorId === 'tcm' ? 60 : 15;
+  const step = svc.slotStepMin || (svc.doctorId === 'tcm' ? 60 : 15);
   const out = [];
   demoWindows(k, svc.doctorId).forEach(([a, b]) => {
     for (let t = a; t + svc.durationMin <= b; t += step) {
