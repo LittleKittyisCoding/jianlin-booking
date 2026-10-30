@@ -418,6 +418,7 @@ function renumber() {
 
 function resetBooking() {
   state.svc = null; state.date = null; state.time = null; state.contact = null;
+  if (state.cfg) renderServices(); // รายการบริการต่างกันระหว่างแท็บจองกับแท็บแอดมิน
   $('services').querySelectorAll('.svc').forEach((b) => b.setAttribute('aria-pressed', 'false'));
   $('step-date').hidden = true; $('step-time').hidden = true; $('step-form').hidden = true;
   $('step-patient').hidden = state.mode !== 'admin';
@@ -471,12 +472,13 @@ function renderServices() {
       ? `<div class="phaselegend">${s.phases.map((p) => `<span>${esc(p.label)} ${p.min} นาที</span>`).join('')}</div>` : '';
     return `<button type="button" class="svc" aria-pressed="false" data-id="${esc(s.id)}">
       <div class="svc-head"><span class="svc-name">${esc(s.name)}</span><span class="svc-dur">${s.durationMin} นาที</span></div>
-      ${s.detail ? `<div class="svc-detail">${esc(s.detail)}</div>` : ''}
+      ${s.detail || s.adminOnly ? `<div class="svc-detail">${esc([s.detail, s.adminOnly ? 'เฉพาะแอดมินจองแทน' : ''].filter(Boolean).join(' · '))}</div>` : ''}
       <div class="phasebar" aria-hidden="true">${bar}</div>${legend}
     </button>`;
   };
   $('services').innerHTML = state.cfg.doctors.map((d) => {
-    const list = state.cfg.services.filter((s) => s.doctorId === d.id);
+    // บริการ adminOnly แสดงเฉพาะแท็บแอดมิน (แท็บจองของแอดมินเองก็ไม่แสดง)
+    const list = state.cfg.services.filter((s) => s.doctorId === d.id && (!s.adminOnly || state.mode === 'admin'));
     return list.length ? `<div class="doc-h">${esc(d.title ? d.title + ' · ' + d.name : d.name)}</div>${list.map(card).join('')}` : '';
   }).join('');
   $('services').querySelectorAll('.svc').forEach((b) => b.addEventListener('click', () => pickService(b.dataset.id)));
@@ -735,7 +737,7 @@ const demo = {
       { id: 'acu', doctorId: 'tcm', name: 'ฝังเข็ม', detail: 'ใช้เวลาประมาณ 40 นาที', durationMin: 40, phases: [{ min: 40, label: 'ฝังเข็ม', doctor: true }] },
       { id: 'cupping', doctorId: 'tcm', name: 'ครอบแก้ว', detail: 'ใช้เวลาประมาณ 20 นาที', durationMin: 20, phases: [{ min: 20, label: 'ครอบแก้ว', doctor: true }] },
       { id: 'guasha', doctorId: 'tcm', name: 'กัวซาหน้าใส + มาสก์หน้าสมุนไพรจีน', detail: 'ใช้เวลาประมาณ 1 ชั่วโมง', durationMin: 60, phases: [{ min: 60, label: 'กัวซาหน้าใส + มาสก์หน้าสมุนไพรจีน', doctor: true }] },
-      { id: 'tcm_followup', doctorId: 'tcm', name: 'Follow up', detail: 'ใช้เวลาประมาณ 15 นาที', durationMin: 15, slotStepMin: 15, phases: [{ min: 15, label: 'Follow up', doctor: true }] },
+      { id: 'tcm_followup', doctorId: 'tcm', name: 'Follow up', detail: 'ใช้เวลาประมาณ 15 นาที', durationMin: 15, slotStepMin: 15, adminOnly: true, phases: [{ min: 15, label: 'Follow up', doctor: true }] },
     ],
   },
   contacts: [
